@@ -1,0 +1,26 @@
+{
+  "name": "venom_devils_api_site",
+  "version": "1.0.0",
+  "description": "Scrap easily video info and direct url data from Facebook",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "node app.js"
+  },
+  "author": "VENOM DEVIL",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "bcrypt": "^5.1.1",
+    "cheerio": "^1.0.0-rc.12",
+    "crypto": "^1.0.1",
+
+    "express": "^4.21.2",
+    
+    "html-entities": "^2.5.2",
+    "moment-timezone": "^0.5.46",
+    "mongodb": "^6.12.0",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.16"
+  }
+}

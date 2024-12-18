@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Basic Page Info -->
+    <meta charset="utf-8" />
+    <title>VENOM DEVIL'S API </title>
+
+    <!-- Site favicon -->
+<!-- Site favicon -->
+<link
+rel="apple-touch-icon"
+sizes="180x180"
+href="vendors/images/apple-touch-icon.png"
+/>
+<link
+rel="icon"
+type="image/png"
+sizes="32x32"
+href="vendors/images/weblite_logo.png"
+/>
+<link
+rel="icon"
+type="image/png"
+sizes="16x16"
+href="vendors/images/weblite_logo.png"
+/>
+
+    <!-- Mobile Specific Metas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="../vendors/styles/core.css" />
+    <link rel="stylesheet" type="text/css" href="../vendors/styles/icon-font.min.css" />
+    <link rel="stylesheet" type="text/css" href="../vendors/styles/style.css" />
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Google Tag Manager -->
+    <script>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-NXZMQSS');
+    </script>
+  </head>
+  <body class="login-page">
+    <div class="login-header box-shadow">
+      <div class="container-fluid d-flex justify-content-between align-items-center">
+        <div class="brand-logo">
+          <a href="signin.html">    <h4 						class="ligth-logo"
+            >VENOM DEVIL's API</h4></a>
+        </div>
+        <div class="login-menu">
+          <ul>
+            <!-- <li><a href="signup.html">Register</a></li> -->
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="login-wrap d-flex align-items-center flex-wrap justify-content-center">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="login-box bg-white box-shadow border-radius-10">
+            <div class="login-title">
+              <h2 class="text-center text-primary">VENOM DEVIL'S API</h2>
+            </div>
+            <label for="">Please enter the code sent to your email.</label>
+
+            <form>
+
+              <div class="input-group custom">
+                <input type="number" class="form-control form-control-lg" id="userCode" maxlength="6" placeholder="Enter the code" required />
+                <div class="input-group-append custom">
+                  <span class="input-group-text"><i class="icon-copy dw dw-key"></i></span>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-12">
+                  <div class="input-group mb-0">
+                    <a class="btn btn-primary btn-lg btn-block" href="javascript:void(0);" onclick="verifyCode()" id="submitBtn">Submit</a>
+                  </div>
+                  <div class="text-center mt-2">
+                    <button class="btn btn-link" onclick="resendCode()" id="resendBtn" disabled>Resend Code</button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../vendors/scripts/core.js"></script>
+    <script src="../vendors/scripts/script.min.js"></script>
+    <script src="../vendors/scripts/process.js"></script>
+    <script src="../vendors/scripts/layout-settings.js"></script>
+    <script>
+      function showToast(message, icon) {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: icon,
+          title: message,
+          showConfirmButton: false,
+          timer: 3000,
+        });
+      }
+			const urlParams = new URLSearchParams(window.location.search);
+            const email = urlParams.get('email');
+      function checkMessage() {
+        const message = localStorage.getItem('verificationMessage');
+        const color = localStorage.getItem('color');
+        const success = localStorage.getItem('success');
+
+        if (message) {
+          const icon = color === 'green' ? 'success' : 'error';
+          showToast(message, icon);
+          localStorage.removeItem('verificationMessage');
+          localStorage.removeItem('icon');
+        }
+
+        if (success) {
+          showToast(success, 'success');
+          localStorage.removeItem('success');
+        }
+      }
+
+      function countdown() {
+        let timeLeft = 90;
+        const resendBtn = document.getElementById('resendBtn');
+        resendBtn.disabled = true;
+
+        const timerInterval = setInterval(() => {
+          const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+          const seconds = String(timeLeft % 60).padStart(2, '0');
+          resendBtn.textContent = `${minutes}:${seconds}`;
+
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            resendBtn.textContent = 'Resend Code';
+            resendBtn.disabled = false;
+          }
+          timeLeft--;
+        }, 1000);
+      }
+
+      function resendCode() {
+        countdown();
+        fetch(`/resend-verification?email=${encodeURIComponent(email)}`)
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.redirectUrl) {
+              localStorage.setItem('verificationMessage', 'Code resent successfully. Check your email!');
+              localStorage.setItem('color', 'green');
+              window.location.href = data.redirectUrl;
+            } else {
+              throw new Error(data.error || 'Failed to resend the code.');
+            }
+          })
+          .catch((error) => {
+            localStorage.setItem('verificationMessage', error.message);
+            localStorage.setItem('color', 'red');
+            showToast(error.message, 'error');
+          });
+      }
+	  
+	  
+	  function verifyCode() {
+  const userCode = document.getElementById('userCode').value;
+
+  if (!userCode) {
+    showToast('Code field is required', 'error');
+    return;
+  }
+
+  fetch('/de?' + urlParams.toString())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch verification data');
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (userCode === data.code) {
+		const email = urlParams.get('email');
+
+        return fetch(`/verification-true?email=${encodeURIComponent(email)}`);
+      } else {
+        throw new Error('Invalid code. Please try again.');
+      }
+    })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Verification failed. Please try again.');
+      }
+      window.location.href = '/success.html';
+    })
+    .catch((error) => {
+      showToast(error.message, 'error');
+      console.error('Error:', error);
+    });
+}
+
+      checkMessage();
+      countdown();
+    </script>
+  </body>
+</html>

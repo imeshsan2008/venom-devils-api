@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+</head>
+<body>
+    <!-- <h2>Login</h2>
+    <form id="loginForm">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+        <button type="submit">Login</button>
+    </form> -->
+
+    <script>
+        // Check if sessionStorage has user info
+        if (sessionStorage.getItem('email') && sessionStorage.getItem('password')) {
+            // alert('You are already logged in');
+            window.location.href = 'dashboard.html'; // Redirect to a dashboard page
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+			const email = urlParams.get("email");
+			const passwordParam = urlParams.get("password");
+			const mes = urlParams.get("mes");
+			const ico = urlParams.get("icon");
+		  
+			const Mes_message = document.getElementById("Mes_message");
+
+
+        function session() {
+            sessionStorage.setItem('email', email);
+            sessionStorage.setItem('password', passwordParam);
+            document.cookie = `email=${email}; expires=${new Date(Date.now() + 86400000).toUTCString()}; path=/`;
+            document.cookie = `password=${passwordParam}; expires=${new Date(Date.now() + 86400000).toUTCString()}; path=/`;
+            window.location.href = 'dashboard.html?mes=' + mes + '&icon=' + ico; // Redirect to a dashboard page
+        }
+        session();
+     
+		  
+			if (mes) {
+			  localStorage.setItem('mes', mes);
+			  localStorage.setItem('icon', ico);
+		  
+			  let stateObj = { id: "100" };
+			  window.history.pushState(stateObj, "dashboard", "dashboard.html");
+			}
+		  
+			// Set the email, password, and full_name input values from the URL parameters
+			if (email) {
+			  emailInput.value = email;
+			}
+			if (passwordParam) {
+			  password.value = passwordParam;
+			}
+			if (fullName) {
+			  fullNameInput.value = fullName;
+			}
+		  
+			// Retrieve the verification message from localStorage
+			const message = localStorage.getItem('mes');
+			const icon = localStorage.getItem('icon');
+		
+			// Set the color for the message
+		
+		  
+			// If there's a message, display it
+			if (message) {
+				Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: icon,
+                    title: message,
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+		       		  
+			  // Optionally clear the message after it's displayed
+			  localStorage.removeItem('mes');
+				  localStorage.removeItem('icon');
+		}
+
+    </script>
+</body>
+</html>
