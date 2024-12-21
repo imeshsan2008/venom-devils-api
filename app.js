@@ -1,11 +1,11 @@
 const express = require("express");
-const getFbVideoInfo = require("./index");
+const { getFbVideoInfo , getTiktokVideoInfo } = require("./index");
 const bodyParser = require("body-parser");
 const path = require("path");
 const cron = require('node-cron');
 
 const app = express();
-const PORT = process.env.PORT || 8000; // You can change this to any port you prefer
+const PORT = process.env.PORT || 3000; // You can change this to any port you prefer
 const mongoURL = process.env.mongoURL || 'mongodb+srv://imeshsan2008:Imeshsandeepa018@cluster0.sirdt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster'; 
 const { MongoClient } = require('mongodb');
 const bcrypt = require("bcrypt");
@@ -643,10 +643,65 @@ app.get("/reset", async (req, res) => {
    
 });
 
+app.get("/download/tiktok", async (req, res) => {
+    const apikey = req.query.apikey;
+    const videoUrl = req.query.url;
+
+    if (!apikey) {
+        return res.status(400).json({ error: "API key is required" });
+    }
+
+    try {
+        
+        const { isValid, error, user } = await validateApiKey(apikey);
+        if (!db) {
+            await connectToMongoDB();
+        }
+        if (!isValid) {
+            return res.status(400).json({ error });
+        }
+
+        if (!videoUrl || !videoUrl.trim()) {
+            return res.status(400).json({ error: "URL query parameter is required" });
+        }
+
+        if (!["tiktok.com", "fb.watch"].some((domain) => videoUrl.includes(domain))) {
+            return res.status(400).json({ error: "Please enter a valid Facebook URL" });
+        }
+
+        const result = await getTiktokVideoInfo(videoUrl);
+
+        // Construct user info
+        const userInfo = {
+            email: user.email,
+            plan: user.plan,
+        };
+
+        // Increment the request count
+        await incrementRequestCount(apikey);
+
+        // Send the response
+        res.json({
+            userInfo,
+            videoInfo: result,
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.use((req, res) => {
     res.redirect(`/404.html`);
 
 });
+
+
+
+
+
+
+
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
