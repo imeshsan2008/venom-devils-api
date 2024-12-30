@@ -5,7 +5,7 @@ const path = require("path");
 const cron = require('node-cron');
 
 const app = express();
-const PORT = process.env.PORT || 8000; // You can change this to any port you prefer
+const PORT = process.env.PORT || 3000; // You can change this to any port you prefer
 const mongoURL = process.env.mongoURL || 'mongodb+srv://imeshsan2008:Imeshsandeepa018@cluster0.sirdt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster'; 
 const { MongoClient } = require('mongodb');
 const bcrypt = require("bcrypt");
@@ -702,7 +702,6 @@ app.use((req, res) => {
 
 
 
-// Start the server
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running on http://0.0.0.0:${PORT}`);
+  });
