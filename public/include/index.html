@@ -55,29 +55,7 @@
 			src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2973766580778258"
 			crossorigin="anonymous"
 		></script>
-		<script>
-			window.dataLayer = window.dataLayer || [];
-			function gtag() {
-				dataLayer.push(arguments);
-			}
-			gtag("js", new Date());
-
-			gtag("config", "G-GBZ3SGGX85");
-		</script>
-		<!-- Google Tag Manager -->
-		<script>
-			(function (w, d, s, l, i) {
-				w[l] = w[l] || [];
-				w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-				var f = d.getElementsByTagName(s)[0],
-					j = d.createElement(s),
-					dl = l != "dataLayer" ? "&l=" + l : "";
-				j.async = true;
-				j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
-				f.parentNode.insertBefore(j, f);
-			})(window, document, "script", "dataLayer", "GTM-NXZMQSS");
-		</script>
-		<!-- End Google Tag Manager -->
+	
 	</head>
 	<style>
 		.main{
@@ -100,7 +78,7 @@
 	</style>
 	<body>
 		
-		<div class="pre-loader">
+		<!-- <div class="pre-loader">
 			<div class="pre-loader-box">
 				<div class="loader-logo">
 					<img src="vendors/images/weblite_logo.png" height="250px" width="250px" alt="" />
@@ -111,7 +89,7 @@
 				<div class="percent" id="percent1">0%</div>
 				<div class="loading-text">Loading...</div>
 			</div>
-		</div>
+		</div> -->
 
 		<div class="header" >
 			
@@ -135,7 +113,7 @@
 						</a>
 					</div>
 				</div>
-				<!-- <div class="user-notification">
+				<div class="user-notification">
 					<div class="dropdown">
 						<a
 							class="dropdown-toggle no-arrow"
@@ -145,8 +123,9 @@
 						>
 							<i class="icon-copy dw dw-notification"></i>
 							<span class="badge notification-active"></span>
-						</a> -->
-						<!-- <div class="dropdown-menu dropdown-menu-right">
+						</a>
+						<a class="btn btn-danger" style="color: white;" href="signin.html"><i class="fa fa-sign-in" aria-hidden="true"> Sign In</i></a>	
+						<div class="dropdown-menu dropdown-menu-right">
 							<div class="notification-list mx-h-350 customscroll">
 								<ul>
 									<li>
@@ -154,30 +133,17 @@
 											<img src="vendors/images/weblite_logo.png" alt="" />
 											<h3>Developer and owner</h3>
 											<p>
-												Thanks for Using  Api</p>
+please Login to access the private API key and more features.											</p>
+											</p>
 										</a>
 									</li>
 									
 								</ul>
 							</div>
-						</div> -->
-					<!-- </div> -->
-				<!-- </div> -->
-				<div class="user-info-dropdown">
-					<div class="dropdown">
-						<a
-							class="dropdown-toggle "
-							href="signin.html"
-							role="button"
-							data-toggle=""
-						>
-						
-<button class="btn btn-primary" style="margin-top: 10px; margin-bottom: 10px;">signin | signup</button>
-						</a>
-
-						
+						</div>
 					</div>
 				</div>
+
 				<div class="github-link">
 					<a href="https://github.com/imeshsan2008" target="_blank"
 						><img src="vendors/images/github.svg" alt=""
@@ -414,13 +380,9 @@
 						
 						</div>
 					</div>
-
-<div class="pd-20 bg-white border-radius-4 box-shadow mb-30 " >
-	<div class="alert alert-danger" role="alert">
-		Please sign in or sign up first. Guest mode only allows access to the default link
-	</div>
-	<div class="alert alert-primary" role="alert">
-<strong>More Coming Soon!</strong> Stay tuned for more updates.
+					<div class="pd-20 bg-white border-radius-4 box-shadow mb-30 " >
+						<div class="alert alert-primary" role="alert">
+  <strong>More Coming Soon!</strong> Stay tuned for more updates.
 </div>
 <br>
 		<div class="main">			
@@ -509,155 +471,209 @@
 			></iframe
 		></noscript>
 		<!-- Google Tag Manager (noscript) -->
-		
-			<script>
-	    if (sessionStorage.getItem('email') && sessionStorage.getItem('password')) {
-            // alert('You are already logged in');
-            window.location.href = 'dashboard.html?preloader=false'; // Redirect to a dashboard page
-        }
-	// Generates a random string (for API key)
-	function generateRandomString(length) {
-		const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-		let result = "";
-		for (let i = 0; i < length; i++) {
-			result += chars.charAt(Math.floor(Math.random() * chars.length));
-		}
-		if (result) {
-			localStorage.setItem("apikey", result);
-		}
-		return result;
-	}
-	
-	const result =  generateRandomString(10);
-		
-	const submenu = document.querySelector(".submenu");
+		<script>
+			// Redirect to signin if session is invalid
+			// if (!sessionStorage.getItem('email') || !sessionStorage.getItem('password')) {
+			// 	window.location.href = 'signin.html';
+			// }
+
+
+			const email = 'publicvenomdevilapi@gmail.com';
+			const url = `/userinfo?email=${encodeURIComponent(email)}`;
+			
+			// Function to update today's request count
+			function tdy_request_count(email) {
+				fetch(`/reset?email=${encodeURIComponent(email)}`)
+					.then(response => {
+						if (!response.ok) {
+							throw new Error('Network response was not ok');
+						}
+						return response.json();
+					})
+					.then(data => {
+						if (data.status === "true") {
+							document.getElementById('tdy_requests').innerText = data.tdy_request_count || "0";
+						} else {
+						// console.log('error with tdy_request_count fetch:', data);
+						
+						}
+					})
+					.catch(error => {
+						console.error('Error with tdy_request_count fetch:', error);
+						location.href = 'signin.html?mes=Error with user info fetch:', error+"&ico=error" ;
+			
+					});
+			}
+			
+			// Fetch user data and update the dashboard
+			fetch(url)
+				.then(response => {
+					if (!response.ok) {
+						Swal.fire({
+								toast: true,
+								position: 'top-end',
+								icon: 'error',
+								title: 'Network response was not ok',
+								showConfirmButton: false,
+								timer: 3000
+							});
+						throw new Error('Network response was not ok');
+					}
+					return response.json();
+				})
+				.then(data => {
+					// document.getElementById('full_name').innerText = `Hello, ${data.full_name}`;
+					document.getElementById('total_requests').innerText = data.total_request_count;
+					document.getElementById('tdy_requests').innerText = data.tdy_request_count;
+					const apikey = document.getElementById('apikey').value = data.apikey;
+					// document.getElementById('email').sign = data.email;
+					document.getElementById('plan').innerText = data.plan;
+					document.getElementById('tdy_requests_date').innerText = data.last_reset_date;
+			
+					tdy_request_count(data.email);
+			
+					// Update submenu with links
+					const submenu = document.querySelector(".submenu");
 					const links = [
-						{ text: 'Facebook Video Downloader', url: `/download/fb/guest?url=https://web.facebook.com/reel/1785899365480917&apikey=${result}` }
-					];
+						{ text: 'Facebook Video Downloader', url: `/download/Fb?url=https://web.facebook.com/reel/1785899365480917&apikey=${apikey}` }
+,						{ text: 'TikTok Video Downloader', url: `/download/tiktok?url=https://vt.tiktok.com/ZS6r8xQbm/&apikey=${apikey}` }
+];
 			
 					links.forEach(link => {
 						const li = document.createElement('li');
 						const a = document.createElement('a');
+			
 						a.href = link.url;
 						a.textContent = link.text;
 						a.target = '_blank';
+			
 						li.appendChild(a);
 						submenu.appendChild(li);
 					});
-	document.getElementById("apikey").value = result;
-	
-	const videoUrl = 'https://www.facebook.com/reel/1061019468955616';
-	async function downloadFacebookVideo(videoUrl) {
-		
-		// Retrieve the API key from localStorage
-		const apikey = localStorage.getItem("apikey");
-	
-		if (!apikey) {
-			alert("API key is missing. Please log in or set it first.");
-			return;
-		}
-	
-		try {
-			const response = await fetch(`/download/fb?apikey=${apikey}&url=${encodeURIComponent(videoUrl)}`);
-	
-			if (!response.ok) {
-				const errorData = await response.json();
-				alert(`Error: ${errorData.error}`);
-				return;
-			}
-	
-			const data = await response.json();
-	
-			console.log("User Info:", data.userInfo);
-			console.log("Video Info:", data.videoInfo);
-	
-			alert("Video information fetched successfully!");
-		} catch (error) {
-			console.error("Error downloading video:", error);
-			alert("An unexpected error occurred.");
-		}
-	}
-	
-				
-				// Display messages from localStorage
-				function mes_toast() {
-					const message = localStorage.getItem('mes');
-					const icon = localStorage.getItem('icon');
-					const preloader = document.getElementById('preloader');
-				
-					if (message) {
-						Swal.fire({
-							toast: true,
-							position: 'top-end',
-							icon: icon,
-							title: message,
-							showConfirmButton: false,
-							timer: 10000
-						});
-				
-						localStorage.removeItem('mes');
-						localStorage.removeItem('icon');
-					}
-				
-					if (preloader) {
-						preloader.style.display = 'none';
-					}
-				}
-				document.addEventListener('DOMContentLoaded', mes_toast);
-				
-				// Toggle API Key visibility
-				const toggleApiKeyButton = document.getElementById('toggleApiKeyButton');
-				const toggleIcon = document.getElementById('toggleIcon');
-				const apiKeyInput = document.getElementById('apikey');
-				
-				toggleApiKeyButton.addEventListener('click', () => {
-					if (apiKeyInput.type === 'password') {
-						apiKeyInput.type = 'text';
-						toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
-					} else {
-						apiKeyInput.type = 'password';
-						toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
-					}
-				});
-				
-				// Copy API Key to clipboard
-				const copyApiKeyButton = document.getElementById('copyApiKeyButton');
-				copyApiKeyButton.addEventListener('click', () => {
-					if (toggleIcon.classList.contains('fa-eye-slash')) {
-						navigator.clipboard.writeText(apiKeyInput.value)
-							.then(() => {
-								Swal.fire({
-									toast: true,
-									position: 'top-end',
-									icon: 'success',
-									title: 'API Key copied to clipboard!',
-									showConfirmButton: false,
-									timer: 3000
-								});
-							})
-							.catch(err => {
-								Swal.fire({
-									toast: true,
-									position: 'top-end',
-									icon: 'error',
-									title: `Failed to copy API Key: ${err}`,
-									showConfirmButton: false,
-									timer: 3000
-								});
+				})
+				.catch(error => {
+					Swal.fire({
+								toast: true,
+								position: 'top-end',
+								icon: 'error',
+								title: 'Error with user info fetch', error,
+								showConfirmButton: false,
+								timer: 3000
 							});
-					} else {
-						Swal.fire({
-							toast: true,
-							position: 'top-end',
-							icon: 'error',
-							title: 'First click the eye icon to reveal the key',
-							showConfirmButton: false,
-							timer: 3000
-						});
-					}
+						
+					console.error('Error with user info fetch:', error);
+					
+							location.href = 'signin.html?mes=Error with user info fetch:', error+'&ico=error';
+			
 				});
-				</script>
-				
+			
+			// Logout function
+			function logout() {
+				document.cookie = 'email=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+				document.cookie = 'password=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+			
+				sessionStorage.removeItem('email');
+				sessionStorage.removeItem('password');
+				window.location.href = 'signin.html';
+			}
+			const urlParams = new URLSearchParams(window.location.search);
+					
+						const mes = urlParams.get("mes");
+						const ico = urlParams.get("icon");
+					  
+						const Mes_message = document.getElementById("Mes_message");
+					  
+						if (mes) {
+						  localStorage.setItem('mes', mes);
+						  localStorage.setItem('icon', ico);
+					  
+						  let stateObj = { id: "100" };
+						  window.history.pushState(stateObj, "", "");
+						}
+					  
+			// Display messages from localStorage
+			function mes_toast() {
+    const message = localStorage.getItem('mes');
+    const icon = localStorage.getItem('icon');
+    const preloader = document.getElementById('preloader'); // Get the preloader element
+
+    if (message) {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: icon,
+            title: message,
+            showConfirmButton: false,
+            timer: 10000
+        });
+
+        localStorage.removeItem('mes');
+        localStorage.removeItem('icon');
+        history.replaceState(null, "", "");
+    }
+
+    // Hide the preloader after the toast
+    if (preloader) {
+        preloader.style.display = 'none'; // Ensure preloader is hidden
+    }
+}document.addEventListener('DOMContentLoaded', () => {
+    mes_toast(); // Display the toast and then hide the preloader
+});
+
+
+			// Toggle API Key visibility
+			const toggleApiKeyButton = document.getElementById('toggleApiKeyButton');
+			const toggleIcon = document.getElementById('toggleIcon');
+			const apiKeyInput = document.getElementById('apikey');
+			
+			toggleApiKeyButton.addEventListener('click', () => {
+				if (apiKeyInput.type === 'password') {
+					apiKeyInput.type = 'text';
+					toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
+				} else {
+					apiKeyInput.type = 'password';
+					toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
+				}
+			});
+			
+			// Copy API Key to clipboard
+			const copyApiKeyButton = document.getElementById('copyApiKeyButton');
+			
+			copyApiKeyButton.addEventListener('click', () => {
+				if (toggleIcon.classList.contains('fa-eye-slash')) {
+					navigator.clipboard.writeText(apiKeyInput.value)
+						.then(() => {
+							Swal.fire({
+								toast: true,
+								position: 'top-end',
+								icon: 'success',
+								title: 'API Key copied to clipboard!',
+								showConfirmButton: false,
+								timer: 3000
+							});
+						})
+						.catch(err => {
+							Swal.fire({
+								toast: true,
+								position: 'top-end',
+								icon: 'error',
+								title: `Failed to copy API Key: ${err}`,
+								showConfirmButton: false,
+								timer: 3000
+							});
+						});
+				} else {
+					Swal.fire({
+						toast: true,
+						position: 'top-end',
+						icon: 'error',
+						title: 'First click the eye icon to reveal the key',
+						showConfirmButton: false,
+						timer: 3000
+					});
+				}
+			});
+			</script>
 			
 				</body>
 </html>

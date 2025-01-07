@@ -5,7 +5,7 @@ const path = require("path");
 const cron = require('node-cron');
 
 const app = express();
-const PORT = process.env.PORT || 3000; // You can change this to any port you prefer
+const PORT = process.env.PORT || 8000; // You can change this to any port you prefer
 const mongoURL = process.env.mongoURL || 'mongodb+srv://imeshsan2008:Imeshsandeepa018@cluster0.sirdt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster'; 
 const { MongoClient } = require('mongodb');
 const bcrypt = require("bcrypt");
@@ -75,7 +75,104 @@ app.get('/verification-true', async (req, res) => {
         return res.status(400).json({ error: "Error updating user verification:", error });
     }
 });
+app.post("/request-reset-password", async (req, res) => {
+    const { email } = req.body;
 
+    if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+    }
+
+    try {
+        const user = await db.collection('users').findOne({ email });
+
+        if (!user) {
+            return res.status(400).json({ error: "No user found with the provided email" });
+        }
+
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        const resetTokenExpiry = Date.now() + 3600000; // 1 hour from now
+
+        await db.collection('users').updateOne(
+            { email },
+            { $set: { resetToken, resetTokenExpiry } }
+        );
+
+        const resetLink = `http://localhost:8000/new-password.html?token=${resetToken}&email=${email}`;
+
+        const mailOptions = {
+            from: sendmail,
+            to: email,
+            subject: 'Password Reset Request',
+            html: `
+                <p>You requested a password reset. Click the link below to reset your password:</p>
+                <a href="${resetLink}">Reset Password</a>
+                <p>If you did not request this, please ignore this email.</p>
+            `,
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.status(200).json({ success: "Password reset link sent to your email" });
+    } catch (error) {
+        console.error("Error requesting password reset:", error.message);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+app.post("/reset-password", async (req, res) => {
+    const { token, email, newPassword } = req.body;
+
+    if (!token || !email || !newPassword) {
+        return res.status(400).json({ error: "Token, email, and new password are required" });
+    }
+
+    try {
+        const user = await db.collection('users').findOne({ email, resetToken: token });
+
+        if (!user || user.resetTokenExpiry < Date.now()) {
+            return res.status(400).json({ error: "Invalid or expired token" });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await db.collection('users').updateOne(
+            { email },
+            { $set: { password: hashedPassword, resetToken: null, resetTokenExpiry: null } }
+        );
+
+        res.status(200).json({ success: "Password reset successfully" });
+    } catch (error) {
+        console.error("Error resetting password:", error.message);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+app.post("/check-credentials", async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    try {
+        const user = await db.collection('users').findOne({ email });
+
+        if (!user) {
+            return res.status(400).json({ error: "No user found with the provided email" });
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+            return res.status(400).json({ error: "Invalid password" });
+        }
+
+        res.status(200).json({ success: "Credentials are valid" });
+    } catch (error) {
+        console.error("Error checking credentials:", error.message);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
 // Route to handle user signup
 app.post("/signup", async (req, res) => {
     const { full_name, email, password } = req.body;
@@ -140,6 +237,19 @@ app.post("/signup", async (req, res) => {
     }
 });
 
+// Route to reset all users' daily request counts at 12:00 AM
+cron.schedule('0 0 * * *', async () => {
+    try {
+        console.log("Running daily reset task for all users...");
+        const result = await db.collection('users').updateMany(
+            {},
+            { $set: { tdy_request_count: 0, last_reset_date: new Date().toLocaleString("en-US", { timeZone: "Asia/Colombo" }) } }
+        );
+        console.log(`Daily request counts reset for ${result.modifiedCount} users.`);
+    } catch (err) {
+        console.error("Error resetting daily request counts for all users:", err.message);
+    }
+});
 
 app.post("/signin", async (req, res) => {
     const { email, password } = req.body;
@@ -147,29 +257,24 @@ app.post("/signin", async (req, res) => {
     // Check if all fields are provided
     if (!email || !password) {
         res.redirect(`/sing.html?email=${email}&mes=Invalid password&icon=warning`);
-return
+        return;
     }
 
     try {
-        
-
         // Check if the user exists
         const user = await db.collection('users').findOne({ email });
 
         if (!user) {
-            res.redirect(`/sing.html?email=${email}&password=${password}&mes=Incorrect email adderss. Please check again&icon=warning`);
-            return
-
+            res.redirect(`/signin.html?email=${email}&password=${password}&mes=Incorrect email address. Please check again&icon=warning`);
+            return;
         }
 
         // Compare the password with the stored hashed password
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
-            res.redirect(`/sing.html?email=${email}&mes=Invalid password&icon=warning`);
-            return
-            
-
+            res.redirect(`/signin.html?email=${email}&mes=Invalid password&icon=warning`);
+            return;
         }
 
         // Check if the account is verified
@@ -178,13 +283,13 @@ return
         } else {
             // User is verified, redirect to home page
             res.redirect(`/home.html?email=${email}&password=${password}&mes=Login successful&icon=success`);
-            return
+            return;
         }
 
     } catch (error) {
         console.error("Error during signin:", error.message);
-        res.redirect(`/sing.html?email=${email}&mes=Internal server error&icon=error`);
-            return
+        res.redirect(`/signin.html?email=${email}&mes=Internal server error&icon=error`);
+        return;
     }
 });
 
@@ -696,12 +801,11 @@ app.use((req, res) => {
 });
 
 
-
-
-
-
-
-
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
     console.log(`Server is running on http://0.0.0.0:${PORT}`);
   });
+
+
+
+
+

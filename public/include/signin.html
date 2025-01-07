@@ -173,17 +173,56 @@ href="vendors/images/weblite_logo.png"
             // alert('You are already logged in');
             window.location.href = 'dashboard.html'; // Redirect to a dashboard page
         }
-      
+    
 
         let password = document.getElementById("password");
         let submit = document.getElementById("submit");
         let emailInput = document.getElementById("email");
         let fullNameInput = document.getElementById("full_name");
         let input = document.querySelector("input");
+  
+        function name() {
+            if (emailInput.value && password.value) {
+            fetch("/check-credentials", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email: emailInput.value, password: password.value })
+            })
+            .then(response => response.json())
+            .then(data => {
+            if (data.success) {
+                sessionStorage.setItem('email', emailInput.value);
+                sessionStorage.setItem('password', password.value);
+                window.location.href = 'dashboard.html';
+            } else {
+                Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: 'Invalid credentials',
+                showConfirmButton: false,
+                timer: 3000
+                });
+            }
+            })
+            .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: 'An error occurred',
+                showConfirmButton: false,
+                timer: 3000
+            });
+            });
+        }
 
-
+        }
 		emailInput.onkeyup=function(){
-	
+            name();
 	submit.disabled = false;
 
 }
@@ -242,7 +281,7 @@ input.onkeyup=function(){
 			  localStorage.setItem('icon', ico);
 		  
 			  let stateObj = { id: "100" };
-			  window.history.pushState(stateObj, "login", "login.html");
+			  window.history.pushState(stateObj, "signin", "signin.html");
 			}
 		  
 			// Set the email, password, and full_name input values from the URL parameters

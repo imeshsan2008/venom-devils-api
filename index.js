@@ -194,7 +194,8 @@ while ((match = zoomCoverRegex.exec(data)) !== null) {
     const url = decodeURIComponent(match[2]); // The URL (decoded)
     zoomCovers[resolution] = url; // Store in an object
   }
-  
+  const duration = data.match(/"duration":(\d+)/);
+
 const shareCount = data.match(/"shareCount":(\d+)/);
 const commentCount = data.match(/"commentCount":(\d+)/);
 const playCount = data.match(/"playCount":(\d+)/);
@@ -262,6 +263,7 @@ const formattedlikeCount = repostCount ? formatCount(parseInt(likeCount[1])) : '
                         like : formattedlikeCount || 0,
                         cover: tumb || 'Error',
                         video: downurl || 'Error',
+                        duration: duration || 'Error',
 
                         sound: audioplayurl || 'Error',
 
