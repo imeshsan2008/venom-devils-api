@@ -1,8 +1,13 @@
 const express = require("express");
-const { getFbVideoInfo , getTiktokVideoInfo } = require("./index");
+const { getFbVideoInfo  } = require("./apireq_files/facebook/index.js");
+const { getYtVideoInfo } = require("./apireq_files/youtube/index.js");
+const {  getTiktokVideoInfo } = require("./apireq_files/tiktok/index.js");
+const axios = require("axios");
+
 const bodyParser = require("body-parser");
 const path = require("path");
 const cron = require('node-cron');
+const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 8000; // You can change this to any port you prefer
@@ -17,6 +22,7 @@ const nodemailer = require('nodemailer');
 // const mongoURL = ''
 const sendmail =  process.env.sendmail || 'imeshbota0@gmail.com';
 const sendmailpass =  process.env.sendmailpass || 'erih xxkb jomi hlkz';
+const site_url =  process.env.site_url || 'erih xxkb jomi hlkz';
 
 const dbName = process.env.DB_NAME || 'apisite';
 let db;
@@ -35,6 +41,7 @@ const connectToMongoDB = async () => {
   }
   return db;
 };
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -97,7 +104,7 @@ app.post("/request-reset-password", async (req, res) => {
             { $set: { resetToken, resetTokenExpiry } }
         );
 
-        const resetLink = `http://localhost:8000/new-password.html?token=${resetToken}&email=${email}`;
+        const resetLink = `${site_url}/new-password.html?token=${resetToken}&email=${email}`;
 
         const mailOptions = {
             from: sendmail,
@@ -520,6 +527,55 @@ app.get("/userinfo", async (req, res) => {
       return res.status(500).json({ error: "Server error" });
     }
   });
+
+
+app.get("/download/yt", async (req, res) => {
+    const apikey = req.query.apikey;
+    const videoUrl = req.query.url;
+
+    if (!apikey) {
+        return res.status(400).json({ error: "API key is required" });
+    }
+
+    try {
+        const { isValid, error, user } = await validateApiKey(apikey);
+
+        if (!isValid) {
+            return res.status(400).json({ error });
+        }
+
+        if (!videoUrl || !videoUrl.trim()) {
+            return res.status(400).json({ error: "URL query parameter is required" });
+        }
+
+        if (!["youtube.com", "youtu.be"].some((domain) => videoUrl.includes(domain))) {
+            return res.status(400).json({ error: "Please enter a valid Youtube URL" });
+        }
+
+const result = await getYtVideoInfo(videoUrl);
+
+        const userInfo = {
+            email: user.email,
+            plan: user.plan,
+        };
+
+        await incrementRequestCount(apikey);
+
+        res.json({
+            userInfo,
+            videoInfo: result,
+        });
+    }catch (error) {
+  console.error('Error in /download/yt:', error);
+  res.status(500).json({
+    error: error.error || "Internal Server Error",
+    details: error.details || error.message || null,
+    code: error.code || null
+  });
+}
+
+});
+
 // Updated route handler
 app.get("/download/fb", async (req, res) => {
     const apikey = req.query.apikey;
@@ -564,7 +620,9 @@ app.get("/download/fb", async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-});// Updated route handler
+});
+
+// Updated route handler
 app.get("/download/fb/guest", async (req, res) => {
     const videoUrl = req.query.url;
 
@@ -770,7 +828,7 @@ app.get("/download/tiktok", async (req, res) => {
             return res.status(400).json({ error: "URL query parameter is required" });
         }
 
-        if (!["tiktok.com", "fb.watch"].some((domain) => videoUrl.includes(domain))) {
+        if (!["tiktok.com"].some((domain) => videoUrl.includes(domain))) {
             return res.status(400).json({ error: "Please enter a valid Facebook URL" });
         }
 
@@ -792,6 +850,64 @@ app.get("/download/tiktok", async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+});
+
+async function getTikTokVideo(url) {
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        "Referer": "https://www.tiktok.com/"
+      }
+    });
+
+    const html = response.data;
+
+    // find JSON inside <script id="SIGI_STATE">...</script>
+    const json = html.match(/<script id="SIGI_STATE".*?>(.*?)<\/script>/);
+
+    if (!json) return null;
+
+    const data = JSON.parse(json[1]);
+
+    const item = data.ItemModule[Object.keys(data.ItemModule)[0]];
+    return {
+      wm: item.video.downloadAddr,      // with watermark url
+      no_wm: item.video.playAddr        // no watermark url
+    };
+
+  } catch (e) {
+    console.log("Error:", e.message);
+    return null;
+  }
+}
+
+
+app.get("/download/mp4/tiktok", async (req, res) => {
+    const url = decodeURIComponent(req.query.url);
+     const video_id = new URL(url).searchParams.get("video_id");
+
+    if (!url) {
+        return res.status(400).json({ error: "URL is required" });
+    }
+    
+    try {
+        const response = await axios.get(url, {
+            responseType: "arraybuffer",
+            headers: {
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+                "referer": "https://www.tiktok.com/"
+            }
+        });
+
+        res.setHeader("Content-Type", "video/mp4");
+        res.setHeader("Content-Disposition", "attachment; filename=DarkVenom_MediaX_Tiktok_"+video_id+".mp4"  );
+        res.send(response.data);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Failed to download video");
     }
 });
 
