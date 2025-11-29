@@ -20,9 +20,9 @@ const nodemailer = require('nodemailer');
 
 // MongoDB Configuration
 // const mongoURL = ''
-const sendmail =  process.env.sendmail || 'imeshbota0@gmail.com';
-const sendmailpass =  process.env.sendmailpass || 'erih xxkb jomi hlkz';
-const site_url =  process.env.site_url || 'erih xxkb jomi hlkz';
+const sendmail =  'imeshsan90@gmail.com';
+const sendmailpass =  'yfuk kzck nabm cedb';
+const site_url =  process.env.site_url || 'yfuk kzck nabm cedb';
 
 const dbName = process.env.DB_NAME || 'apisite';
 let db;
@@ -50,12 +50,15 @@ app.use(express.static(path.join(__dirname, 'public/include')));
 connectToMongoDB();
 // Email configuration
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // Use your email provider
+    host: "smtp.gmail.com",
+    port: 465,
+       secure: true,
     auth: {
-        user: sendmail, // Replace with your email
-        pass: sendmailpass, // Replace with your email password or app password
-    },
+        user: sendmail,        // your gmail
+        pass: sendmailpass,    // GOOGLE APP PASSWORD (not normal pass)
+    }
 });
+
 app.get('/verification-true', async (req, res) => {
     const { email } = req.query;
     // console.lo0g(email);
@@ -556,6 +559,7 @@ const result = await getYtVideoInfo(videoUrl);
 
         const userInfo = {
             email: user.email,
+            rquest_count: user.total_request_count,
             plan: user.plan,
         };
 

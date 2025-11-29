@@ -61,6 +61,8 @@ const tumb = decodeUrl(zoomCovers[960]);
 const music = data.match(/"music":\s*(\{[^}]*\})/);  // Match the "music" object, even if it's empty
 const playurlMatch = music ? music[1].match(/"playUrl":"([^"]+)"/) : null;  // Extract the "playurl" value
 const audioplayurl =decodeUrl(playurlMatch[1]);
+const creator = data.match(/"authorName":"([^"]+)"/);  // Extract the desc field
+console.log(creator[4]);
 
 // Safely access the data with optional chaining
 const qualityTypeMatch = data.match(/"QualityType":\s*(\d+)/);
@@ -94,11 +96,13 @@ const formattedCommentCount = commentCount ? formatCount(parseInt(commentCount[1
 const formattedPlayCount = playCount ? formatCount(parseInt(playCount[1])) : '0';
 const formattedRepostCount = repostCount ? formatCount(parseInt(repostCount[1])) : '0';
 const formattedlikeCount = repostCount ? formatCount(parseInt(likeCount[1])) : '0';
+console.log(creator);
 
                 if (formattedShareCount) {
                     resolve({
                         status: "success",
-                        desc:desc[1] || 'null',
+creator : creator ,
+   desc:desc[1] || 'null',
                         share: formattedShareCount || 0,
                         comment: formattedCommentCount || 0,
                         videoplays : formattedPlayCount || 0,
