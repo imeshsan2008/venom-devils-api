@@ -21,7 +21,7 @@
     "moment-timezone": "^0.5.46",
     "mongodb": "^6.12.0",
     "node-cron": "^3.0.3",
-    "nodemailer": "^6.9.16",
+    "nodemailer": "^7.0.11",
     "puppeteer": "^23.11.1",
     "y2mate-dl": "^1.0.4",
     "youtube-dl-exec": "^3.0.22",
