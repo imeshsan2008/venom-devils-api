@@ -859,10 +859,11 @@ const generateRandomString = (length = 5) => {
 };
 
 app.get("/download/mp4/", async (req, res) => {
-    1
+    
     const video_id = generateRandomString();
-    const url = decodeURIComponent(req.query.url);
-
+    let url = decodeURIComponent(req.query.url);
+ url = new URL(url); 
+ const web = url.hostname;
 
     if (!url) {
         return res.status(400).json({ error: "URL is required" });
@@ -878,7 +879,7 @@ app.get("/download/mp4/", async (req, res) => {
         });
 
         res.setHeader("Content-Type", "video/mp4");
-        res.setHeader("Content-Disposition", "attachment; filename=darkvenom_mediax_"+web+"_"+video_id+".mp4"  );
+        res.setHeader("Content-Disposition", `attachment; filename=darkvenom_mediax_${web}_${video_id}.mp4`);
         res.send(response.data);
 
     } catch (err) {
