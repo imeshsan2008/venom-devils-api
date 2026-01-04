@@ -19,7 +19,7 @@ exports.getFbVideoInfo = function (videoUrl, cookie, useragent) {
             "sec-fetch-dest": "document",
             "sec-fetch-mode": "navigate",
             "cache-control": "max-age=0",
-            authority: "www.facebook.com",
+            authority: "www.instargram.com",
             "upgrade-insecure-requests": "1",
             "accept-language": "en-GB,en;q=0.9",
             "sec-ch-ua": '"Google Chrome";v="89", "Chromium";v="89", ";Not A Brand";v="99"',
@@ -75,9 +75,7 @@ if (sdMatch && hdMatch && thumbMatch) {
 }
 
                               
-                const titleMatch = data.match(/<meta\sname="description"\scontent="(.*?)"/) || 
-                                   data.match(/<meta\sproperty="og:title"\scontent="(.*?)"/) || 
-                                   data.match(/"message":{"text":"(.*?)"/);
+                const titleMatch = data.match(/<meta\sname="description"\scontent="(.*?)"/);
 
                 const durationMatch = data.match(/"playable_duration_in_ms":(\d+)/);
 

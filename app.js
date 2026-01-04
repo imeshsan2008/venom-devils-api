@@ -3,6 +3,7 @@ const { getFbVideoInfo  } = require("./apireq_files/facebook/index.js");
 const { getYtVideoInfo } = require("./apireq_files/youtube/index.js");
 const {  getTiktokVideoInfo } = require("./apireq_files/tiktok/index.js");
 const axios = require("axios");
+const { getInstagramVideoInfo } = require("./apireq_files/instargram/index.js");
 
 const bodyParser = require("body-parser");
 const path = require("path");
@@ -626,57 +627,53 @@ app.get("/download/fb", async (req, res) => {
     }
 });
 
+
 // Updated route handler
-app.get("/download/fb/guest", async (req, res) => {
+app.get("/download/instagram", async (req, res) => {
+    const apikey = req.query.apikey;
     const videoUrl = req.query.url;
 
+    if (!apikey) {
+        return res.status(400).json({ error: "API key is required" });
+    }
+
     try {
+        
+        const { isValid, error, user } = await validateApiKey(apikey);
+
+        if (!isValid) {
+            return res.status(400).json({ error });
+        }
+
+        if (!videoUrl || !videoUrl.trim()) {
+            return res.status(400).json({ error: "URL query parameter is required" });
+        }
+
+        if (!["instagram.com"].some((domain) => videoUrl.includes(domain))) {
+            return res.status(400).json({ error: "Please enter a valid Instagram URL" });
+        }
+
+        const result = await getInstagramVideoInfo(videoUrl);
+
+        // Construct user info
         const userInfo = {
-            email: "Guest",
-            link: "https://venom-devils-api.koyeb.app/signup.html"
+            email: user.email,
+            plan: user.plan,
+            
         };
 
-        // Check if video URL is provided
-        if (!videoUrl || !videoUrl.trim()) {
-            return res.status(400).json({
-                ...userInfo,
-                error: "URL query parameter is required"
-            });
-        }
+        // Increment the request count
+        await incrementRequestCount(apikey);
 
-        // Validate if the URL is from a supported Facebook domain
-        if (!["https://web.facebook.com/reel/1785899365480917"].some((domain) => videoUrl.includes(domain))) {
-            return res.status(400).json({
-                ...userInfo,
-                error: "You are accessing guest mode. Please sign up or sign in. Can you use any Facebook URL?"
-            });
-        }
-
-        // Get video info (assuming getFbVideoInfo is defined and works)
-        const result = await getFbVideoInfo(videoUrl);
-
-        // Send the response with user info and video info
+        // Send the response
         res.json({
             userInfo,
             videoInfo: result,
         });
-
     } catch (error) {
-        const userInfo2 = {
-            email: "Guest",
-            link: "https://venom-devils-api.koyeb.app/signup.html"
-        };
-
-        // Send error response
-        res.status(500).json({
-            ...userInfo2,
-            error: error.message
-        });
+        res.status(500).json({ error: error.message });
     }
 });
-
-
-
 // Function to reset daily request counts
 const resetDailyRequestCount = async (email = null) => {
     try {
@@ -753,11 +750,7 @@ const resetDailyRequestCount = async (email = null) => {
     }
 };
 
-// Schedule task to reset daily request counts at midnight Colombo time
-// cron.schedule('0 0 * * *', async () => {
-//     console.log("Running daily reset task...");
-//     await resetDailyRequestCount();
-// });
+
 
 // Function to increment request count
 const incrementRequestCount = async (apikey) => {
@@ -793,7 +786,7 @@ console.log(currentDate);
     }
 };
 
-// Example route to manually reset a user's daily request count
+//  manually reset a user's daily request count
 app.get("/reset", async (req, res) => {
     
         const email = req.query.email;
@@ -856,41 +849,20 @@ app.get("/download/tiktok", async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+const generateRandomString = (length = 5) => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+};
 
-async function getTikTokVideo(url) {
-  try {
-    const response = await axios.get(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0",
-        "Referer": "https://www.tiktok.com/"
-      }
-    });
-
-    const html = response.data;
-
-    // find JSON inside <script id="SIGI_STATE">...</script>
-    const json = html.match(/<script id="SIGI_STATE".*?>(.*?)<\/script>/);
-
-    if (!json) return null;
-
-    const data = JSON.parse(json[1]);
-
-    const item = data.ItemModule[Object.keys(data.ItemModule)[0]];
-    return {
-      wm: item.video.downloadAddr,      // with watermark url
-      no_wm: item.video.playAddr        // no watermark url
-    };
-
-  } catch (e) {
-    console.log("Error:", e.message);
-    return null;
-  }
-}
-
-
-app.get("/download/mp4/tiktok", async (req, res) => {
+app.get("/download/mp4/", async (req, res) => {
+    1
+    const video_id = generateRandomString();
     const url = decodeURIComponent(req.query.url);
-     const video_id = new URL(url).searchParams.get("video_id");
+
 
     if (!url) {
         return res.status(400).json({ error: "URL is required" });
@@ -906,7 +878,7 @@ app.get("/download/mp4/tiktok", async (req, res) => {
         });
 
         res.setHeader("Content-Type", "video/mp4");
-        res.setHeader("Content-Disposition", "attachment; filename=DarkVenom_MediaX_Tiktok_"+video_id+".mp4"  );
+        res.setHeader("Content-Disposition", "attachment; filename=darkvenom_mediax_"+web+"_"+video_id+".mp4"  );
         res.send(response.data);
 
     } catch (err) {
@@ -914,6 +886,7 @@ app.get("/download/mp4/tiktok", async (req, res) => {
         res.status(500).send("Failed to download video");
     }
 });
+
 
 app.use((req, res) => {
     res.redirect(`/404.html`);

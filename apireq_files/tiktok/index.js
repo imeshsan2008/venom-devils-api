@@ -109,7 +109,7 @@ creator : creator ,
                         repost : formattedRepostCount || 0,
                         like : formattedlikeCount || 0,
                         cover: tumb || 'Error',
-                        video: 'https://venom-devils-api.koyeb.app/download/mp4/tiktok?url='+ encodeURIComponent(downurl) || 'Error',
+                        video: 'https://venom-devils-api.koyeb.app/download/mp4?url='+ encodeURIComponent(downurl)  || 'Error',
                         duration: duration || 'Error',
 
                         sound: audioplayurl || 'Error',

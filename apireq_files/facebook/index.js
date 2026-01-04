@@ -101,8 +101,8 @@ if (sdMatch && hdMatch && thumbMatch) {
                         title: title,
                         duration: durationMs ? formatDuration(durationMs) : "Unknown",
                         thumbnail: thumbfinallink,
-                        sd: sdfinallink,
-                        hd: hdfinallink
+                        sd: 'https://venom-devils-api.koyeb.app/download/mp4?url='+encodeURIComponent(sdfinallink) +'&web=fb' ,
+                        hd: 'https://venom-devils-api.koyeb.app/download/mp4?url='+encodeURIComponent(hdfinallink) +'&web=fb'
                     });
                 } else {
                     reject({
@@ -121,5 +121,3 @@ if (sdMatch && hdMatch && thumbMatch) {
             });
     });
 };
-
-
