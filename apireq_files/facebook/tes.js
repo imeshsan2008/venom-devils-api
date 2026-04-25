@@ -1,14 +1,24 @@
 const express = require("express");
-const FbScraper = require("./index"); // assuming default export
+const { getFbVideoInfo } = require("./index");
 
 const app = express();
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 
-const fb = new FbScraper({
-    retries: 3,
-    timeout: 15000,
-    creator: "Dark Venom",
-});
+// -------------------------
+// MIDDLEWARE (optional but useful)
+// -------------------------
+app.use(express.json());
+
+// -------------------------
+// BASIC URL VALIDATOR
+// -------------------------
+function isValidUrl(url) {
+    try {
+        return Boolean(new URL(url));
+    } catch {
+        return false;
+    }
+}
 
 // -------------------------
 // API ROUTE
@@ -16,6 +26,7 @@ const fb = new FbScraper({
 app.get("/fb", async (req, res) => {
     const { url, cookie, useragent } = req.query;
 
+    // Validate URL
     if (!url) {
         return res.status(400).json({
             status: "error",
@@ -23,21 +34,46 @@ app.get("/fb", async (req, res) => {
         });
     }
 
+    if (!isValidUrl(url)) {
+        return res.status(400).json({
+            status: "error",
+            message: "Invalid URL format",
+        });
+    }
+
     try {
-        const data = await fb.getFbVideoInfo(
+        const data = await getFbVideoInfo(
             url,
             cookie || "",
             useragent || ""
         );
 
-        return res.json(data);
+        return res.status(200).json({
+            ...data,
+            api: "fb-video-extractor",
+            timestamp: Date.now(),
+        });
+
     } catch (err) {
+        console.error("FB API ERROR:", err);
+
         return res.status(500).json({
             status: "error",
             message: "Internal server error",
-            error: err.message || err,
+            error: err?.message || "Unknown error",
         });
     }
+});
+
+// -------------------------
+// HEALTH CHECK ROUTE
+// -------------------------
+app.get("/", (req, res) => {
+    res.json({
+        status: "running",
+        service: "Facebook Video API",
+        endpoint: "/fb?url=",
+    });
 });
 
 // -------------------------
