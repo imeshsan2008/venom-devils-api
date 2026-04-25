@@ -1,24 +1,25 @@
 const express = require("express");
-const { getFbVideoInfo  } = require("./apireq_files/facebook/index.js");
+const FbScraper  = require("./apireq_files/facebook/index.js");
 const { getYtVideoInfo } = require("./apireq_files/youtube/index.js");
 const {  getTiktokVideoInfo } = require("./apireq_files/tiktok/index.js");
 const axios = require("axios");
 const { getInstagramVideoInfo } = require("./apireq_files/instargram/index.js");
-
 const bodyParser = require("body-parser");
 const path = require("path");
 const cron = require('node-cron');
 const cors = require('cors');
-
 const app = express();
 const PORT = process.env.PORT || 8000; // You can change this to any port you prefer
 const mongoURL = process.env.mongoURL || 'mongodb+srv://imeshsan2008:Imeshsandeepa018@cluster0.sirdt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster'; 
 const { MongoClient } = require('mongodb');
 const bcrypt = require("bcrypt");
 const crypto = require('crypto');
-
 const nodemailer = require('nodemailer');
-
+const fb = new FbScraper({
+    retries: 3,
+    timeout: 15000,
+    creator: "Dark Venom",
+});
 // MongoDB Configuration
 // const mongoURL = ''
 const sendmail =  'imeshsan90@gmail.com';
@@ -26,6 +27,8 @@ const sendmailpass =  'yfuk kzck nabm cedb';
 const site_url =  process.env.site_url || 'yfuk kzck nabm cedb';
 
 const dbName = process.env.DB_NAME || 'apisite';
+console.log(dbName);
+
 let db;
 
 // MongoDB Connection
@@ -42,6 +45,7 @@ const connectToMongoDB = async () => {
   }
   return db;
 };
+
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -606,7 +610,7 @@ app.get("/download/fb", async (req, res) => {
             return res.status(400).json({ error: "Please enter a valid Facebook URL" });
         }
 
-        const result = await getFbVideoInfo(videoUrl);
+        const result = await fb.getFbVideoInfo(videoUrl);
 
         // Construct user info
         const userInfo = {

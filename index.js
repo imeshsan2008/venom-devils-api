@@ -1,6 +1,6 @@
 
 const axios = require("axios");
-const creator = "VENOM DEVIL";
+const creator = "DARKVENOM";
 const { decode } = require("html-entities");
 
 exports.getFbVideoInfo = function (videoUrl, cookie, useragent) {
